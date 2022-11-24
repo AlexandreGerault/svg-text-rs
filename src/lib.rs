@@ -1,2 +1,1 @@
-mod bounds;
-mod path;
+pub mod svg;
