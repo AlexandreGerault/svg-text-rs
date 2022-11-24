@@ -129,7 +129,7 @@ impl Path {
                     bounds = bounds.close();
                 },
                 _ => {
-                    "Command not implemented".to_string();
+                    return Err("Command not implemented".to_string());
                 },
             }
 
@@ -138,7 +138,7 @@ impl Path {
             }
         }
 
-        return Ok(bounds);
+        Ok(bounds)
     }
 }
 
