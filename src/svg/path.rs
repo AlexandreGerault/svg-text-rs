@@ -2,7 +2,10 @@ use std::fmt::Error;
 
 use super::bounds::Bounds;
 
-const POSSIBLE_PATH_CHARS: &[char] = &['M', 'm', 'L', 'l', 'H', 'h', 'V', 'v', 'C', 'c', 'S', 's', 'Q', 'q', 'T', 't', 'A', 'a', 'Z', 'z'];
+const POSSIBLE_PATH_CHARS: &[char] = &[
+    'M', 'm', 'L', 'l', 'H', 'h', 'V', 'v', 'C', 'c', 'S', 's', 'Q', 'q', 'T', 't', 'A', 'a', 'Z',
+    'z',
+];
 
 #[derive(Debug)]
 struct Command {
@@ -37,9 +40,7 @@ impl Path {
     pub fn new(d_attribute: String) -> Result<Self, Error> {
         let split = d_attribute.split_whitespace();
 
-        let elements = split
-            .map(|s| s.to_string())
-            .collect::<Vec<String>>();
+        let elements = split.map(|s| s.to_string()).collect::<Vec<String>>();
 
         let mut commands = Vec::new();
 
@@ -48,15 +49,11 @@ impl Path {
         for (i, element) in elements[1..].iter().enumerate() {
             if let Ok(arg) = element.parse::<f64>() {
                 current_command.args.push(arg);
-            }
-
-            else if POSSIBLE_PATH_CHARS.contains(&element.chars().next().unwrap()) {
+            } else if POSSIBLE_PATH_CHARS.contains(&element.chars().next().unwrap()) {
                 commands.push(current_command.clone());
-                
-                current_command = Command::new(element.chars().next().unwrap());
-            }
 
-            else {
+                current_command = Command::new(element.chars().next().unwrap());
+            } else {
                 return Err(Error);
             }
 
@@ -64,7 +61,7 @@ impl Path {
                 commands.push(current_command.clone());
             }
         }
-        
+
         Ok(Path { commands })
     }
 
@@ -76,61 +73,85 @@ impl Path {
             match command.command {
                 'M' => {
                     bounds = bounds.move_last_point(command.args[0], command.args[1], is_first);
-                },
+                }
                 'L' => {
                     bounds = bounds.extends(command.args[0], command.args[1]);
-                },
+                }
                 'l' => {
-                    bounds = bounds.extends(bounds.last_point().0 + command.args[0], bounds.last_point().1 + command.args[1]);
-                },
+                    bounds = bounds.extends(
+                        bounds.last_point().0 + command.args[0],
+                        bounds.last_point().1 + command.args[1],
+                    );
+                }
                 'H' => {
                     bounds = bounds.extends(command.args[0], bounds.last_point().1);
-                },
+                }
                 'h' => {
-                    bounds = bounds.extends(bounds.last_point().0 + command.args[0], bounds.last_point().1);
-                },
+                    bounds = bounds.extends(
+                        bounds.last_point().0 + command.args[0],
+                        bounds.last_point().1,
+                    );
+                }
                 'V' => {
                     bounds = bounds.extends(bounds.last_point().0, command.args[0]);
-                },
+                }
                 'v' => {
-                    bounds = bounds.extends(bounds.last_point().0, bounds.last_point().1 + command.args[0]);
-                },
+                    bounds = bounds.extends(
+                        bounds.last_point().0,
+                        bounds.last_point().1 + command.args[0],
+                    );
+                }
                 'C' => {
                     bounds = bounds.extends(command.args[4], command.args[5]);
-                },
+                }
                 'c' => {
-                    bounds = bounds.extends(bounds.last_point().0 + command.args[4], bounds.last_point().1 + command.args[5]);
-                },
+                    bounds = bounds.extends(
+                        bounds.last_point().0 + command.args[4],
+                        bounds.last_point().1 + command.args[5],
+                    );
+                }
                 'S' => {
                     bounds = bounds.extends(command.args[2], command.args[3]);
-                },
+                }
                 's' => {
-                    bounds = bounds.extends(bounds.last_point().0 + command.args[2], bounds.last_point().1 + command.args[3]);
-                },
+                    bounds = bounds.extends(
+                        bounds.last_point().0 + command.args[2],
+                        bounds.last_point().1 + command.args[3],
+                    );
+                }
                 'Q' => {
                     bounds = bounds.extends(command.args[2], command.args[3]);
-                },
+                }
                 'q' => {
-                    bounds = bounds.extends(bounds.last_point().0 + command.args[2], bounds.last_point().1 + command.args[3]);
-                },
+                    bounds = bounds.extends(
+                        bounds.last_point().0 + command.args[2],
+                        bounds.last_point().1 + command.args[3],
+                    );
+                }
                 'T' => {
                     bounds = bounds.extends(command.args[0], command.args[1]);
-                },
+                }
                 't' => {
-                    bounds = bounds.extends(bounds.last_point().0 + command.args[0], bounds.last_point().1 + command.args[1]);
-                },
+                    bounds = bounds.extends(
+                        bounds.last_point().0 + command.args[0],
+                        bounds.last_point().1 + command.args[1],
+                    );
+                }
                 'A' => {
                     bounds = bounds.extends(command.args[5], command.args[6]);
-                },
+                }
                 'a' => {
-                    bounds = bounds.extends(bounds.last_point().0 + command.args[5], bounds.last_point().1 + command.args[6]);
-                },
+                    bounds = bounds.extends(
+                        bounds.last_point().0 + command.args[5],
+                        bounds.last_point().1 + command.args[6],
+                    );
+                }
                 'Z' | 'z' => {
                     bounds = bounds.close();
-                },
+                }
                 _ => {
                     return Err("Command not implemented".to_string());
-                },
+                }
             }
 
             if is_first {
@@ -159,7 +180,7 @@ mod tests {
     #[test]
     fn it_parses_parses_attribute() {
         let path = Path::new("M 0 0 L 10 10 20 20".to_string()).unwrap();
-        
+
         assert_eq!(path.commands.len(), 2);
 
         assert_eq!(path.commands[0].command, 'M');
@@ -178,9 +199,9 @@ mod tests {
     #[test]
     fn it_extends_a_diagonal_line() {
         let path = Path::new("M 10 20 L 75 100".to_string()).unwrap();
-        
+
         let bounds = path.bounds().unwrap();
-        
+
         assert_eq!(bounds.x1(), 10.0);
         assert_eq!(bounds.y1(), 20.0);
         assert_eq!(bounds.x2(), 75.0);
@@ -202,7 +223,7 @@ mod tests {
     #[test]
     fn it_extends_a_horizontal_line() {
         let path = Path::new("M 10 20 H 75".to_string()).unwrap();
-        
+
         let bounds = path.bounds().unwrap();
 
         assert_eq!(bounds.x1(), 10.0, "The first point (x) shouldn't change");
@@ -377,6 +398,10 @@ mod tests {
         assert_eq!(bounds.y1(), 20.0, "The first point (y) shouldn't change");
         assert_eq!(bounds.x2(), 50.0, "The second point (x) should change");
         assert_eq!(bounds.y2(), 50.0, "The second point (y) should change");
-        assert_eq!(bounds.last_point(), (10.0, 20.0), "The last point should be the first one");
+        assert_eq!(
+            bounds.last_point(),
+            (10.0, 20.0),
+            "The last point should be the first one"
+        );
     }
 }
