@@ -1,6 +1,7 @@
-use std::fmt::Error;
-
 use super::bounds::Bounds;
+use lazy_static::lazy_static;
+use regex::Regex;
+use std::fmt::Error;
 
 const POSSIBLE_PATH_CHARS: &[char] = &[
     'M', 'm', 'L', 'l', 'H', 'h', 'V', 'v', 'C', 'c', 'S', 's', 'Q', 'q', 'T', 't', 'A', 'a', 'Z',
@@ -11,6 +12,33 @@ const POSSIBLE_PATH_CHARS: &[char] = &[
 struct Command {
     command: char,
     args: Vec<f64>,
+}
+
+fn get_commands_from_path_string(path: &str) -> Result<Vec<Command>, Error> {
+    lazy_static! {
+        static ref COMMANDS_REGEX: Regex = Regex::new(r"([a-zA-Z])([^a-zA-Z]*)").unwrap();
+    }
+
+    let mut commands = Vec::new();
+
+    for cap in COMMANDS_REGEX.captures_iter(path) {
+        let command = cap.get(1).unwrap().as_str().chars().next().unwrap();
+        let args = cap.get(2).unwrap().as_str().to_string();
+
+        if !POSSIBLE_PATH_CHARS.contains(&command) {
+            return Err(Error);
+        }
+
+        commands.push(Command {
+            command,
+            args: args
+                .split_whitespace()
+                .map(|s| s.parse::<f64>().unwrap())
+                .collect(),
+        });
+    }
+
+    Ok(commands)
 }
 
 #[derive(Debug)]
@@ -27,40 +55,9 @@ impl Clone for Command {
     }
 }
 
-impl Command {
-    fn new(command: char) -> Self {
-        Command {
-            command,
-            args: Vec::new(),
-        }
-    }
-}
-
 impl Path {
     pub fn new(d_attribute: String) -> Result<Self, Error> {
-        let split = d_attribute.split_whitespace();
-
-        let elements = split.map(|s| s.to_string()).collect::<Vec<String>>();
-
-        let mut commands = Vec::new();
-
-        let mut current_command = Command::new(elements[0].chars().nth(0).unwrap());
-
-        for (i, element) in elements[1..].iter().enumerate() {
-            if let Ok(arg) = element.parse::<f64>() {
-                current_command.args.push(arg);
-            } else if POSSIBLE_PATH_CHARS.contains(&element.chars().next().unwrap()) {
-                commands.push(current_command.clone());
-
-                current_command = Command::new(element.chars().next().unwrap());
-            } else {
-                return Err(Error);
-            }
-
-            if i + 1 == elements.len() - 1 {
-                commands.push(current_command.clone());
-            }
-        }
+        let commands = get_commands_from_path_string(d_attribute.as_str())?;
 
         Ok(Path { commands })
     }

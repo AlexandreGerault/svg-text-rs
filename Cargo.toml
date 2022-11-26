@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 roxmltree = "0.13.0"
 html-escape = "0.2.12"
+regex = "1.7.0"
+lazy_static = "1.4.0"
